@@ -24,7 +24,7 @@ def employeeInput():
         
         firstName = input("First Name: ")
         lastName = input("Last Name: ")
-        employeeID = int(input("Employee ID: "))
+        employeeID = input("Employee ID: ")
         dependents = int(input("Number of Dependents: "))
         hoursWorked = float(input("Number of hours worked: "))
     
@@ -48,7 +48,7 @@ def getHourlyRate(employees):
             rate   = float(columns[3])
             hourlyRateData.append([employee_id, rate])
     
-    for i in range (1, len(employees) + 1):
+    for i in range (len(employees)):
         employeeID = employees[i][2]
         rate = 0.0
         
@@ -68,7 +68,7 @@ def getGrossPay(employees, hourlyRate):
     OVERTIME = 1.5
     grosspay = []
     
-    for i in range (1, len(employees) + 1):
+    for i in range (len(employees)):
         hours = employees[i][4]
         rate = hourlyRate[i]
         
@@ -88,7 +88,7 @@ def getTaxes(grossPay):
     FEDERALTAX = .079
     taxes = []
     
-    for i in range (1, len(grossPay) + 1):
+    for i in range (len(grossPay)):
         preTax = grossPay[i]
         stateTax = preTax * STATETAX
         federalTax = preTax * FEDERALTAX
@@ -100,7 +100,7 @@ def getTaxes(grossPay):
 def getNetPay(taxes):
     netPay = []
     
-    for i in range (1, len(taxes) + 1):
+    for i in range (len(taxes)):
         postTax = taxes[i][3]
         netPay.append(postTax)
     return netPay
@@ -116,7 +116,7 @@ def employeeOutput(employees, hourlyRate, grossPay, taxes, netPay):
         totalPostTax  = 0.0
         totalNet       = 0.0
         
-        for i in range (1, len(employees) + 1):
+        for i in range (len(employees)):
             employee_id      = employees[i][2]
             lastName   = employees[i][1]
             firstName  = employees[i][0]
@@ -147,12 +147,12 @@ def employeeOutput(employees, hourlyRate, grossPay, taxes, netPay):
             file.write(",".join(row) + "\n")
 
             # Accumulate totals
-            total_gross    += gross
-            total_pre_tax  += preTax
-            total_state    += stateTax
-            total_federal  += federalTax
-            total_post_tax += postTax
-            total_net      += net
+            totalGross    += gross
+            totalPreTax  += preTax
+            totalStateTax    += stateTax
+            totalFederalTax  += federalTax
+            totalPostTax += postTax
+            totalNet      += net
 
         # Write totals row
         totals_row = [
