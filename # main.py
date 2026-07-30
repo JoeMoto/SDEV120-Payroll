@@ -33,36 +33,68 @@ def employeeInput():
         
     
 def getHourlyRate(employees):
+    hourlyRateData = []
     hourlyRate = []
+    
+    with open("payrates.csv", "r") as file:
+        file.readline()
+        
+        for line in file:
+            line = line.strip()
+            if line == "":
+                continue
+            columns = line.split(",")
+            employee_id = columns[0]
+            rate   = float(columns[3])
+            hourlyRateData.append([employee_id, rate])
     
     for i in range (1, len(employees) + 1):
         employeeID = employees[i][2]
+        rate = 0.0
         
-        #database query to get rate
+        for row in hourlyRateData:
+            if row[0] == employeeID:
+                rate = row[1]
+                break
+            
+        if rate == 0.0:
+            print("Pay rate not found for employee ID: ", employeeID)
         
-        #hourlyRate.append(rate)
+        hourlyRate.append(rate)
     return hourlyRate
 
 def getGrossPay(employees, hourlyRate):
+    MAXHOURS = 40
+    OVERTIME = 1.5
     grosspay = []
     
     for i in range (1, len(employees) + 1):
         hours = employees[i][4]
         rate = hourlyRate[i]
-        # gross =
         
-        #grosspay.append(gross)
+        
+        if hours <= MAXHOURS:
+            gross = rate * hours
+        else:
+            pay = rate * MAXHOURS
+            overTimePay = (hours - MAXHOURS) * (rate * OVERTIME)
+            gross = pay + overTimePay
+        
+        grosspay.append(gross)
     return grosspay
     
 def getTaxes(grossPay):
+    STATETAX = .056
+    FEDERALTAX = .079
     taxes = []
+    
     for i in range (1, len(grossPay) + 1):
         preTax = grossPay[i]
-        # get stateTax
-        # get federalTax
-        # get postTax
+        stateTax = preTax * STATETAX
+        federalTax = preTax * FEDERALTAX
+        postTax = preTax - stateTax - federalTax
         
-        #taxes.append([preTax, stateTax, fedralTax, postTax])
+        taxes.append([preTax, stateTax, federalTax, postTax])
     return taxes
     
 def getNetPay(taxes):
@@ -70,13 +102,71 @@ def getNetPay(taxes):
     
     for i in range (1, len(taxes) + 1):
         postTax = taxes[i][3]
-        #get employee net pay
-        #netPay.append(emplyeeNetPay)
+        netPay.append(postTax)
     return netPay
     
 def employeeOutput(employees, hourlyRate, grossPay, taxes, netPay):
-    # output results and record into spreadsheet
-    return
+    with open("payroll.csv", "w") as file:
+        file.write("Employee ID,Last Name,First Name,Dependents,Hours Worked,Hourly Rate,Gross Pay,Pre-Tax Amount,State Tax (5.6%),Federal Tax (7.9%),Post-Tax Amount,Net Pay,\n")
+        
+        totalGross     = 0.0
+        totalPreTax   = 0.0
+        totalStateTax     = 0.0
+        totalFederalTax   = 0.0
+        totalPostTax  = 0.0
+        totalNet       = 0.0
+        
+        for i in range (1, len(employees) + 1):
+            employee_id      = employees[i][2]
+            lastName   = employees[i][1]
+            firstName  = employees[i][0]
+            dependents  = employees[i][3]
+            hours       = employees[i][4]
+            rate        = hourlyRate[i]
+            gross          = grossPay[i]
+            preTax     = taxes[i][0]
+            stateTax   = taxes[i][1]
+            federalTax = taxes[i][2]
+            postTax    = taxes[i][3]
+            net          = netPay[i]
+
+            row = [
+                employee_id,
+                lastName,
+                firstName,
+                str(dependents),
+                f"{hours:.2f}",
+                f"{rate:.2f}",
+                f"{gross:.2f}",
+                f"{preTax:.2f}",
+                f"{stateTax:.2f}",
+                f"{federalTax:.2f}",
+                f"{postTax:.2f}",
+                f"{net:.2f}",
+            ]
+            file.write(",".join(row) + "\n")
+
+            # Accumulate totals
+            total_gross    += gross
+            total_pre_tax  += preTax
+            total_state    += stateTax
+            total_federal  += federalTax
+            total_post_tax += postTax
+            total_net      += net
+
+        # Write totals row
+        totals_row = [
+            "TOTALS", "", "", "", "", "",
+            f"{totalGross:.2f}",
+            f"{totalPreTax:.2f}",
+            f"{totalStateTax:.2f}",
+            f"{totalFederalTax:.2f}",
+            f"{totalPostTax:.2f}",
+            f"{totalNet:.2f}",
+        ]
+        file.write(",".join(totals_row) + "\n")
+
+    print(f"  Results saved to {"payroll.csv"}")
 
 if __name__ == "__main__":
     main()
