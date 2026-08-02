@@ -94,15 +94,20 @@ def getHourlyRate(employees):
     
     for i in range (len(employees)):
         employeeID = employees[i][2]
-        rate = 0.0
-        
-        for row in hourlyRateData:
-            if row[0] == employeeID:
-                rate = row[1]
+        while True:
+            rate = 0.0
+
+            for row in hourlyRateData:
+                if row[0] == employeeID:
+                    rate = row[1]
+                    break
+
+            if rate != 0.0:
                 break
-            
-        if rate == 0.0:
-            print("Pay rate not found for employee ID: ", employeeID)
+            else:
+                print("Pay rate not found for employee ID: ", employeeID)
+                employeeID = input("Please re-enter Employee ID: ").strip()
+                employees[i][2] = employeeID
         
         hourlyRate.append(rate)
     return hourlyRate
