@@ -1,0 +1,253 @@
+# main.py
+# Payroll Program
+
+start
+    Declarations
+        String firstName
+        String lastName
+        String employeeID
+        num dependents
+        num hoursWorked
+        Array employees
+        Array hourlyRate
+        Array grossPay
+        Array taxes
+        Array netPay
+ 
+    output "Employee Payroll System"
+ 
+    employees  = getEmployeeInput()
+    hourlyRate = getHourlyRate(employees)
+    grossPay   = getGrossPay(employees, hourlyRate)
+    taxes      = getTaxes(grossPay)
+    netPay     = getNetPay(taxes)
+    employeeOutput(employees, hourlyRate, grossPay, taxes, netPay)
+stop
+
+getEmployeeInput()    
+    Declarations
+        num numOfEmployees = 10
+        num i
+        Array employees
+ 
+    i = 1
+    while(i <= numOfEmployees)
+        output "Please enter the information for employee number: ", i
+ 
+        output "First Name: "
+        input firstName
+        while(firstName == "")
+            output "Error: First name cannot be blank."
+            input firstName
+        endwhile
+ 
+        output "Last Name: "
+        input lastName
+        while(lastName == "")
+            output "Error: Last name cannot be blank."
+            input lastName
+        endwhile
+ 
+        output "Employee ID: "
+        input employeeID
+        while(employeeID == "" OR employeeID is not digits only)
+            output "Error: Employee ID cannot be blank and must be a number."
+            input employeeID
+        endwhile
+ 
+        output "Number of Dependents: "
+        input dependents
+        while(dependents < 0 OR dependents > 20)
+            output "Error: Dependents must be a whole number between 0 and 20."
+            input dependents
+        endwhile
+ 
+        output "Number of hours worked: "
+        input hoursWorked
+        while(hoursWorked < 0)
+            output "Error: Hours worked cannot be negative."
+            input hoursWorked
+        endwhile
+        if(hoursWorked > 60) then
+            output "Warning: Hours entered are larger than 60. This is atypical. Enter yes to accept or no to re-enter."
+            input confirm
+            if(confirm != "yes") then
+                output "Number of hours worked: "
+                input hoursWorked
+            endif
+        endif
+ 
+        append [firstName, lastName, employeeID, dependents, hoursWorked] to employees
+        i = i + 1
+    endwhile
+return employees
+
+getHourlyRate(employees)
+    Declarations
+        Array hourlyRateData
+        Array hourlyRate
+        String employeeID
+        num rate
+        num i
+ 
+    open "payrates.csv" for reading
+        skip header line
+        while(line in file)
+            read employeeID, rate from line
+            append [employeeID, rate] to hourlyRateData
+        endwhile
+    close file
+ 
+    i = 0
+    while(i < length(employees))
+        employeeID = employees[i][2]
+        rate = 0.0
+ 
+        for each row in hourlyRateData
+            if(row[0] == employeeID) then
+                rate = row[1]
+                break
+            endif
+        endfor
+ 
+        if(rate == 0.0) then
+            output "Pay rate not found for employee ID: ", employeeID
+        endif
+ 
+        append rate to hourlyRate
+        i = i + 1
+    endwhile
+return hourlyRate
+ 
+ 
+getGrossPay(employees, hourlyRate)
+    Declarations
+        num MAXHOURS = 40
+        num OVERTIME = 1.5
+        Array grossPay
+        num hours
+        num rate
+        num pay
+        num overTimePay
+        num gross
+        num i
+ 
+    i = 0
+    while(i < length(employees))
+        hours = employees[i][4]
+        rate  = hourlyRate[i]
+ 
+        if(hours <= MAXHOURS) then
+            gross = rate * hours
+        else
+            pay         = rate * MAXHOURS
+            overTimePay = (hours - MAXHOURS) * (rate * OVERTIME)
+            gross       = pay + overTimePay
+        endif
+ 
+        append gross to grossPay
+        i = i + 1
+    endwhile
+return grossPay
+ 
+ 
+getTaxes(grossPay)
+    Declarations
+        num STATETAX   = 0.056
+        num FEDERALTAX = 0.079
+        Array taxes
+        num preTax
+        num stateTax
+        num federalTax
+        num postTax
+        num i
+ 
+    i = 0
+    while(i < length(grossPay))
+        preTax     = grossPay[i]
+        stateTax   = preTax * STATETAX
+        federalTax = preTax * FEDERALTAX
+        postTax    = preTax - stateTax - federalTax
+ 
+        append [preTax, stateTax, federalTax, postTax] to taxes
+        i = i + 1
+    endwhile
+return taxes
+ 
+ 
+getNetPay(taxes)
+    Declarations
+        Array netPay
+        num postTax
+        num i
+ 
+    i = 0
+    while(i < length(taxes))
+        postTax = taxes[i][3]
+        append postTax to netPay
+        i = i + 1
+    endwhile
+return netPay
+ 
+ 
+employeeOutput(employees, hourlyRate, grossPay, taxes, netPay)
+    Declarations
+        String employeeID
+        String lastName
+        String firstName
+        num dependents
+        num hours
+        num rate
+        num gross
+        num preTax
+        num stateTax
+        num federalTax
+        num postTax
+        num net
+        num totalGross     = 0.0
+        num totalPreTax    = 0.0
+        num totalStateTax  = 0.0
+        num totalFedTax    = 0.0
+        num totalPostTax   = 0.0
+        num totalNet       = 0.0
+        num i
+ 
+    open "payroll.csv" for writing
+        write header row to file
+ 
+        i = 0
+        while(i < length(employees))
+            employeeID = employees[i][2]
+            lastName   = employees[i][1]
+            firstName  = employees[i][0]
+            dependents = employees[i][3]
+            hours      = employees[i][4]
+            rate       = hourlyRate[i]
+            gross      = grossPay[i]
+            preTax     = taxes[i][0]
+            stateTax   = taxes[i][1]
+            federalTax = taxes[i][2]
+            postTax    = taxes[i][3]
+            net        = netPay[i]
+ 
+            write employeeID, lastName, firstName, dependents, hours,
+                  rate, gross, preTax, stateTax, federalTax, postTax, net
+                  to file
+ 
+            totalGross    = totalGross    + gross
+            totalPreTax   = totalPreTax   + preTax
+            totalStateTax = totalStateTax + stateTax
+            totalFedTax   = totalFedTax   + federalTax
+            totalPostTax  = totalPostTax  + postTax
+            totalNet      = totalNet      + net
+            i = i + 1
+        endwhile
+ 
+        write "TOTALS", totalGross, totalPreTax, totalStateTax,
+              totalFedTax, totalPostTax, totalNet to file
+ 
+    close file
+ 
+    output "Results saved to payroll.csv"
+return
+    

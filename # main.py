@@ -22,11 +22,55 @@ def employeeInput():
     for i in range (1, numOfEmployees + 1):
         print("Please enter the information for employee number: ", i)
         
-        firstName = input("First Name: ")
-        lastName = input("Last Name: ")
-        employeeID = input("Employee ID: ")
-        dependents = int(input("Number of Dependents: "))
-        hoursWorked = float(input("Number of hours worked: "))
+        while True:
+            firstName = input("First Name: ").strip()
+            if firstName == "":
+                print("  Error: First name cannot be blank.")
+            else:
+                break
+            
+        while True:
+            lastName = input("Last Name: ").strip()
+            if lastName == "":
+                print("  Error: Last name cannot be blank.")
+            else:
+                break
+            
+        while True:
+            employeeID = input("Employee ID: ").strip()
+            if employeeID == "":
+                print("  Error: Employee ID cannot be blank.")
+            elif not employeeID.isdigit():
+                print("  Error: Employee ID must be a number")
+            else:
+                break
+            
+        while True:
+            try:
+                dependents = int(input("Number of Dependents: "))
+                if dependents < 0:
+                    print("  Error: Dependents cannot be negative.")
+                elif dependents > 20:
+                    print("  Error: Number of dependents is too high please enter a number less than 20.")
+                else:
+                    break
+            except ValueError:
+                print("  Error: Please enter a whole number.")
+                
+        while True:
+            try:
+                hoursWorked = float(input("Number of hours worked: "))
+                if hoursWorked < 0:
+                    print("  Error: Hours cannot be negative.")
+                elif hoursWorked > 60:
+                    print("  Warning: Hours entered are larger than 60. This is atypical.")
+                    confirm = input("  Are you sure? Enter 'yes' to accept or 'no' to re-enter: ").strip().lower()
+                    if confirm == "yes":
+                        break
+                else:
+                    break
+            except ValueError:
+                print("  Error: Please enter a number.")
     
         employees.append([firstName, lastName, employeeID, dependents, hoursWorked])
     return employees  
@@ -135,14 +179,14 @@ def employeeOutput(employees, hourlyRate, grossPay, taxes, netPay):
                 lastName,
                 firstName,
                 str(dependents),
-                f"{hours:.2f}",
-                f"{rate:.2f}",
-                f"{gross:.2f}",
-                f"{preTax:.2f}",
-                f"{stateTax:.2f}",
-                f"{federalTax:.2f}",
-                f"{postTax:.2f}",
-                f"{net:.2f}",
+                str(round(hours, 2)),
+                str(round(rate, 2)),
+                str(round(gross, 2)),
+                str(round(preTax, 2)),
+                str(round(stateTax, 2)),
+                str(round(federalTax, 2)),
+                str(round(postTax, 2)),
+                str(round(net, 2)),
             ]
             file.write(",".join(row) + "\n")
 
@@ -154,19 +198,18 @@ def employeeOutput(employees, hourlyRate, grossPay, taxes, netPay):
             totalPostTax += postTax
             totalNet      += net
 
-        # Write totals row
         totals_row = [
             "TOTALS", "", "", "", "", "",
-            f"{totalGross:.2f}",
-            f"{totalPreTax:.2f}",
-            f"{totalStateTax:.2f}",
-            f"{totalFederalTax:.2f}",
-            f"{totalPostTax:.2f}",
-            f"{totalNet:.2f}",
+            str(round(totalGross, 2)),
+            str(round(totalPreTax, 2)),
+            str(round(totalStateTax, 2)),
+            str(round(totalFederalTax, 2)),
+            str(round(totalPostTax, 2)),
+            str(round(totalNet, 2)),
         ]
         file.write(",".join(totals_row) + "\n")
 
-    print(f"  Results saved to {"payroll.csv"}")
+    print("Results saved to payroll.csv")
 
 if __name__ == "__main__":
     main()
