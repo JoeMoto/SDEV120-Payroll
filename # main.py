@@ -18,7 +18,17 @@ def main():
 def employeeInput():
     employees = []
     numOfEmployees = 10
+    validIDs = []
     
+    with open("payrates.csv", "r") as file:
+        file.readline()
+        for line in file:
+            line = line.strip()
+            if line == "":
+                continue
+            columns = line.split(",")
+            validIDs.append(columns[0])
+            
     for i in range (1, numOfEmployees + 1):
         print("Please enter the information for employee number: ", i)
         
@@ -38,12 +48,9 @@ def employeeInput():
             
         while True:
             employeeID = input("Employee ID: ").strip()
-            if employeeID == "":
-                print("  Error: Employee ID cannot be blank.")
-            elif not employeeID.isdigit():
-                print("  Error: Employee ID must be a number")
-            else:
+            if employeeID in validIDs:
                 break
+            print("Pay rate not found for employee ID: ", employeeID)
             
         while True:
             try:
@@ -94,20 +101,12 @@ def getHourlyRate(employees):
     
     for i in range (len(employees)):
         employeeID = employees[i][2]
-        while True:
-            rate = 0.0
+        rate = 0.0
 
-            for row in hourlyRateData:
-                if row[0] == employeeID:
-                    rate = row[1]
-                    break
-
-            if rate != 0.0:
+        for row in hourlyRateData:
+            if row[0] == employeeID:
+                rate = row[1]
                 break
-            else:
-                print("Pay rate not found for employee ID: ", employeeID)
-                employeeID = input("Please re-enter Employee ID: ").strip()
-                employees[i][2] = employeeID
         
         hourlyRate.append(rate)
     return hourlyRate
